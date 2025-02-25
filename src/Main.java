@@ -1,8 +1,8 @@
 import java.awt.dnd.DragSourceMotionListener;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.ArrayList;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 class Vehiculo {
@@ -10,9 +10,6 @@ class Vehiculo {
     protected String marca;
     protected String modelo;
     protected LocalTime horaEntrada;
-    protected LocalTime horaSalida;
-    protected boolean parqueado;
-    protected int precioPorHora;
 
     public Vehiculo(String placa, String marca, String modelo, LocalTime horaEntrada) {
         this.placa = placa;
@@ -20,8 +17,6 @@ class Vehiculo {
         this.modelo = modelo;
         this.horaEntrada = horaEntrada;
     }
-
-
 
     public String getPlaca() {
         return placa;
@@ -39,10 +34,6 @@ class Vehiculo {
         return horaEntrada;
     }
 
-    public LocalTime getHoraSalida() {
-        return horaSalida;
-    }
-
     public void setPlaca(String newplaca) {
         this.placa = newplaca;
     }
@@ -58,19 +49,6 @@ class Vehiculo {
     public void setHoraEntrada(LocalTime newhora) {
         this.horaEntrada = newhora;
     }
-
-    public void setHoraSalida(LocalTime newhora) {
-        this.horaSalida = newhora;
-    }
-
-    public void setParqueado(boolean estado){
-        this.parqueado = estado;
-    }
-
-    public int getPrecioPorHora(){
-        return precioPorHora;
-    }
-
 }
 
 class Automovil extends Vehiculo{
@@ -79,7 +57,6 @@ class Automovil extends Vehiculo{
     public Automovil(String placa, String marca, String modelo, LocalTime horaEntrada, String tipoCombustible) {
         super(placa, marca, modelo, horaEntrada);
         this.tipoCombustible = tipoCombustible;
-        this.precioPorHora = 10000;
     }
 
     public String getTipoCombustible() {
@@ -97,7 +74,6 @@ class Motocicleta extends Vehiculo {
     public Motocicleta(String placa, String marca, String modelo, LocalTime horaEntrada, int cilindraje) {
         super(placa, marca, modelo, horaEntrada);
         this.cilindraje = cilindraje;
-        this.precioPorHora = 1000;
     }
 
     public int getCilindraje() {
@@ -115,7 +91,6 @@ class Camion extends Vehiculo {
     public Camion(String placa, String marca, String modelo, LocalTime horaEntrada, double capacidadCarga) {
         super(placa, marca, modelo, horaEntrada);
         this.capacidadCarga = capacidadCarga;
-        this.precioPorHora = 100000;
     }
 
     public double getCapacidadCarga(){
@@ -127,207 +102,214 @@ class Camion extends Vehiculo {
     }
 }
 
-class Parqueadero {
-    private List<Vehiculo> vehiculos = new ArrayList<>();
+class Parqueadero{
+    private  List<Vehiculo> vehiculos;
 
-    public void registrarEntrada(Vehiculo vehiculo) {
-        vehiculo.setParqueado(true);
+    public Parqueadero() {
+        this.vehiculos = new ArrayList<>();
+    }
+
+    public void registrarEntrada(Vehiculo vehiculo){
+        vehiculo.setHoraEntrada(LocalTime.now());
         vehiculos.add(vehiculo);
-        System.out.println(ColoresConsola.GREEN + "Se ha ingresado al parqueadero el vehículo con placa [" + vehiculo.getPlaca() + "]"
-        + ColoresConsola.RESET);
-        System.out.println(ColoresConsola.BLUE + "Hora de registro del vehículo: [" + vehiculo.getHoraEntrada() + "]" +
-                ColoresConsola.RESET);
+        System.out.println(ColoresConsola.CYAN + "Vehículo con placa [" + vehiculo.getPlaca() + "] registrado.");
+        System.out.println(ColoresConsola.YELLOW + "Hora de registro" + vehiculo.getHoraEntrada());
     }
 
-    private double calcularPrecio(Vehiculo vehiculo) {
-        int precioHora = vehiculo.getPrecioPorHora();
-        Duration duration = Duration.between(vehiculo.getHoraEntrada(), vehiculo.getHoraSalida());
-        long minutos = duration.toMinutes();
-        int horas = (int) Math.ceil(minutos / 60.0); // Redondeo al alza
-
-        return horas * precioHora;
-    }
-
-    public double registrarSalida(int index) {
-        Vehiculo vehiculo = vehiculos.get(index);
-        LocalTime entrada = vehiculo.getHoraEntrada();
-        LocalTime salida = vehiculo.getHoraSalida();
-        if (entrada.isAfter(salida)) {
-            vehiculo.setHoraSalida(LocalTime.now());
-            System.out.println(ColoresConsola.BLUE + "Hora de salida del vehículo: [" + vehiculo.getHoraSalida() + "]" +
-                    ColoresConsola.RESET);
-            vehiculo.setParqueado(false);
-            return calcularPrecio(vehiculo);
-        }else{
-            System.out.println(ColoresConsola.RED + "Vehículo no se encuentra en el parqueadero" + ColoresConsola.RESET);
-            return 0;
-        }
-    }
-
-    private int getVehiculosParqueados(){
-        int cantidad = 0;
+    public Vehiculo getVehiculo(String placaVehiculo){
         for (Vehiculo vehiculo: vehiculos){
-            if (vehiculo.parqueado){
-                cantidad++;
+            if (placaVehiculo.equals(vehiculo.getPlaca())){
+                return vehiculo;
             }
         }
-        return cantidad;
+        return null;
     }
 
-    public void consultarEstado(){
-            System.out.println(ColoresConsola.BLUE + "Cantidad de vehículos registrados [" + vehiculos.size() + "]" +
-                    ColoresConsola.RESET);
-            System.out.println(ColoresConsola.BLUE + "Cantidad de vehículos en el parqueadero [" + getVehiculosParqueados() +
-                    "]" + ColoresConsola.RESET);
+    private int calcularHoras(LocalTime horaEntrada){
+        LocalTime horaSalida = LocalTime.now();
+        Duration duracion = Duration.between(horaEntrada, horaSalida);
+        Long minutos = duracion.toMinutes();
+        int horasTotales = (int) Math.ceil((minutos / 60.0));
+
+        return horasTotales;
     }
-}
 
-
-
-class ColoresConsola {
-    public static final String RESET = "\u001B[0m";  // Resetear color
-    public static final String RED = "\u001B[31m";   // Rojo
-    public static final String GREEN = "\u001B[32m"; // Verde
-    public static final String YELLOW = "\u001B[33m";// Amarillo
-    public static final String BLUE = "\u001B[34m";  // Azul
-    public static final String PURPLE = "\u001B[35m";// Morado
-    public static final String CYAN = "\u001B[36m";  // Cian
-}
-
-class Menu{
-
-    Parqueadero parqueadero = new Parqueadero();
-
-    Scanner scanner = new Scanner(System.in);
-
-    int option;
-
-    do{
-        System.out.println(ColoresConsola.CYAN + "Bienvenido al sistema del parqueadero" + ColoresConsola.RESET);
-        System.out.println("Elige una opción \n");
-        System.out.println("[1] Ingresar un vehículo");
-        System.out.println("[2] Registrar Salida de Vehículo");
-        System.out.println("[3] Consultar estado del parqueadero");
-        System.out.println("[4] Salir del programa");
-
-        try{
-            option = scanner.nextInt();
-        }catch (Exception e){
-            System.out.println(ColoresConsola.CYAN + "Elige una opción válida. [Número del 1 al 4]" + ColoresConsola.RESET);
-            scanner.nextLine();
+    private int calcularPrecio(Vehiculo vehiculo){
+        int horas = calcularHoras(vehiculo.getHoraEntrada());
+        if (vehiculo instanceof Motocicleta){
+            return horas * 1000;
+        } else if (vehiculo instanceof Automovil) {
+            return horas * 10000;
+        } else {
+            return horas * 100000;
         }
 
+    }
 
-        switch (option){
-            case 1:
-                int option1;
-                do{
-                    System.out.println("Indica el tipo de vehículo \n");
-                    System.out.println("[1] Moto");
-                    System.out.println("[2] Automovil");
-                    System.out.println("[3] Camión");
-                    System.out.println("[4] Salir");
+    public void registrarSalida(String placaVehiculo){
+        Vehiculo vehiculo = getVehiculo(placaVehiculo);
+        if (vehiculo != null){
+            System.out.println("Registrando hora de salida. El precio a pagar es de [" + ColoresConsola.YELLOW +
+                    calcularPrecio(vehiculo) + "]" + ColoresConsola.RESET);
+            vehiculo.setHoraEntrada(null);
+        } else {
+            System.out.println(ColoresConsola.RED + "No se ha encontrado el vehículo con la placa indicada" +
+                    ColoresConsola.RESET);
+        }
+    }
 
-                    while (true){
-                        try{
-                            option1 = scanner.nextInt();
-                            break;
-                        }catch (Exception e){
-                            System.out.println(ColoresConsola.CYAN + "Elige una opción válida. [Número del 1 al 4]" + ColoresConsola.RESET);
-                            scanner.nextLine();
-                        }
-                    }
+   public void mostrarParqueadero(){
+        for (Vehiculo vehiculo: vehiculos){
+            if (vehiculo.getHoraEntrada() != null)
+            System.out.println("Vehículo [" + vehiculo.getPlaca() + "] ->" +  "En parqueadero");
+            else {
+                System.out.println("Vehículo [" + vehiculo.getPlaca() + "] ->" +  "Ha salido del parqueadero");
+            }
+        }
+   }
+}
+
+class MenuUser {
+    private final Scanner input = new Scanner(System.in);
+    private Parqueadero parqueadero = new Parqueadero();
+
+    private String menuTipoCombustible() {
+        int option1 = -1;
+
+        while (true){
+            System.out.println("Selecciona el tipo de combustible");
+            System.out.println("Selecciona el tipo de vehículo que deseas registrar \n");
+            System.out.println(ColoresConsola.YELLOW + "[1] " + ColoresConsola.RESET + "Gasolina");
+            System.out.println(ColoresConsola.YELLOW + "[2] " + ColoresConsola.RESET + "Diesel");
+            System.out.println(ColoresConsola.YELLOW + "[3] " + ColoresConsola.RESET + "Eléctrico");
+
+            try {
+                option1 = input.nextInt();
+                input.nextLine();
+
+                switch (option1) {
+                    case 1:
+                        return "Gasolina";
+                    case 2:
+                        return "Diesel";
+                    case 3:
+                        return "Eléctrico";
+                    default:
+                        System.out.println("Selecciona una opción válida");
+                }
+            } catch (Exception e){
+                System.out.println("Ingresa un valor válido");
+                input.nextLine();
+            }
+        }
+    }
 
 
+    private Vehiculo desplegarOpcionesVehiculo() {
+        String placa;
+        String marca;
+        String modelo;
+
+
+        int option = -1;
+
+        while (true) {
+            System.out.println("Selecciona el tipo de vehículo que deseas registrar \n");
+            System.out.println(ColoresConsola.PURPLE + "[1] " + ColoresConsola.RESET + "Automóvil");
+            System.out.println(ColoresConsola.PURPLE + "[2] " + ColoresConsola.RESET + "Motocicleta");
+            System.out.println(ColoresConsola.PURPLE + "[3] " + ColoresConsola.RESET + "Camión");
+
+            try {
+                option = input.nextInt();
+                input.nextLine();
+            } catch (Exception e) {
+                System.out.println("Ingresa una opción válida");
+            }
+
+            switch (option) {
+                case 1:
+                    String tipoCombustible;
+                    tipoCombustible = menuTipoCombustible();
+                    System.out.println("Ingresar placa del vehículo");
+                    placa = input.next();
+                    System.out.println("Ingresar marca del vehículo");
+                    marca = input.next();
+                    System.out.println("Ingresar modelo del vehículo");
+                    modelo = input.next();
+                    return new Automovil(placa, marca, modelo, LocalTime.now(), tipoCombustible);
+                case 2:
+                    int cilindraje;
+                    System.out.println("Ingresa el cilindraje del vehículo");
+                    cilindraje = input.nextInt();
+                    System.out.println("Ingresar placa del vehículo");
+                    placa = input.next();
+                    System.out.println("Ingresar marca del vehículo");
+                    marca = input.next();
+                    System.out.println("Ingresar modelo del vehículo");
+                    modelo = input.next();
+                    return new Motocicleta(placa, marca, modelo, LocalTime.now(), cilindraje);
+                case 3:
+                    double capacidad;
+                    System.out.println("Ingresa la capacidad del vehículo");
+                    capacidad = input.nextInt();
+                    System.out.println("Ingresar placa del vehículo");
+                    placa = input.next();
+                    System.out.println("Ingresar marca del vehículo");
+                    marca = input.next();
+                    System.out.println("Ingresar modelo del vehículo");
+                    modelo = input.next();
+                    return new Camion(placa, marca, modelo, LocalTime.now(), capacidad);
+            }
+        }
+    }
+
+    public void desplegarMenu() {
+        int option = -1;
+        Vehiculo vehiculo;
+
+        do {
+            System.out.println(ColoresConsola.BLUE + "Bienvenido al menú de usuario del Parqueadero" +
+                    ColoresConsola.RESET);
+            System.out.println("Seleccione una opción para empezar: \n");
+            System.out.println(ColoresConsola.CYAN + "[1] " + ColoresConsola.RESET + "Ingresar vehículo al parqueadero");
+            System.out.println(ColoresConsola.CYAN + "[2] " + ColoresConsola.RESET + "Registrar la salida de un vehículo");
+            System.out.println(ColoresConsola.CYAN + "[3] " + ColoresConsola.RESET + "Mostrar el estado del parqueadero");
+            System.out.println(ColoresConsola.RED + "[4] " + ColoresConsola.RESET + "Finalizar el programa");
+
+            try {
+                option = input.nextInt();
+                input.nextLine();
+            } catch (Exception e) {
+                System.out.println("Ingrese un número válido.");
+            }
+
+            switch (option){
+                case 1:
+                    vehiculo = desplegarOpcionesVehiculo();
+                    parqueadero.registrarEntrada(vehiculo);
+                    break;
+                case 2:
                     String placa;
-                    String modelo;
-                    String marca;
-
-                    switch (option1){
-                        case 1:
-                            int cilindraje;
-                            System.out.println("Ingresa la placa del vehículo");
-                            placa = scanner.next();
-                            System.out.println("Ingresa el modelo del vehículo");
-                            modelo = scanner.next();
-                            System.out.println("Ingresa la marca del vehículo");
-                            marca = scanner.next();
-                            System.out.println("Ingresa el cilindraje");
-                            while (true){
-                                try{
-                                    cilindraje = scanner.nextInt();
-                                    break;
-                                }catch (Exception e){
-                                    System.out.println("Ingresa un valo válido");
-                                }
-                            }
-                            Motocicleta moto = new Motocicleta(placa, marca, modelo, LocalTime.now(), cilindraje);
-                            parqueadero.registrarEntrada(moto);
-                            break;
-                        case 2:
-                            String tipoCombustible;
-                            System.out.println("Ingresa la placa del vehículo");
-                            placa = scanner.next();
-                            System.out.println("Ingresa el modelo del vehículo");
-                            modelo = scanner.next();
-                            System.out.println("Ingresa la marca del vehículo");
-                            marca = scanner.next();
-                            System.out.println("Ingresa el tipo de combustible");
-                            while (true){
-                                try{
-                                    tipoCombustible = scanner.next();
-                                    break;
-                                }catch (Exception e){
-                                    System.out.println("Ingresa un valo válido");
-                                }
-                            }
-                            Automovil carro = new Automovil(placa, marca, modelo, LocalTime.now(), tipoCombustible);
-                            parqueadero.registrarEntrada(carro);
-                            break;
-                        case 3:
-                            double capacidad;
-                            System.out.println("Ingresa la placa del vehículo");
-                            placa = scanner.next();
-                            System.out.println("Ingresa el modelo del vehículo");
-                            modelo = scanner.next();
-                            System.out.println("Ingresa la marca del vehículo");
-                            marca = scanner.next();
-                            System.out.println("Ingresa la capacidad del vehículo");
-                            while (true){
-                                try{
-                                    capacidad = scanner.nextInt();
-                                    break;
-                                }catch (Exception e){
-                                    System.out.println("Ingresa un valor válido");
-                                }
-                            }
-                            Camion camion = new Camion(placa, marca, modelo, LocalTime.now(), capacidad);
-                            parqueadero.registrarEntrada(camion);
-                            break;
-                        case 4:
-                            break;
-                    }
-
-                }while (option1 != 4);
-            case 2:
-                int posicion;
-                System.out.println("Inserta la posición del vehículo a retirar");
-                parqueadero.consultarEstado();
-                posicion = scanner.nextInt();
-                parqueadero.registrarSalida(posicion);
-                break;
-            case 3:
-                parqueadero.consultarEstado();
-            case 4:
-                break;
+                    System.out.println("Ingresa la placa del vehículo");
+                    placa = input.next();
+                    parqueadero.registrarSalida(placa);
+                    break;
+                case 3:
+                    parqueadero.mostrarParqueadero();
+                case 4:
+                    break;
+                default:
+                    System.out.println("Coloca una opción válida");
+            }
         }while (option != 4);
-
-
     }
 }
+
 
 public class Main {
     public static void main(String[] args) {
-
+        MenuUser menu = new MenuUser();
+        menu.desplegarMenu();
+        System.out.println("Ha salido del programa.");
     }
 }
